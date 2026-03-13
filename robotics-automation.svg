@@ -1,0 +1,69 @@
+<svg width="820" height="560" viewBox="0 0 820 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Automation and Robotics Illustration</title>
+  <desc id="desc">Abstract automation scene with robotic arm, control panels, and data flow lines.</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10233B"/>
+      <stop offset="100%" stop-color="#0B1422"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF8A24"/>
+      <stop offset="100%" stop-color="#F04F23"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3BC4FF"/>
+      <stop offset="100%" stop-color="#1E8BFF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="10" y="10" width="800" height="540" rx="28" fill="url(#bg)" stroke="#1F3657" stroke-width="2"/>
+
+  <rect x="56" y="68" width="206" height="130" rx="12" fill="#101D31" stroke="#274260"/>
+  <rect x="74" y="88" width="98" height="12" rx="6" fill="#294766"/>
+  <rect x="74" y="114" width="170" height="10" rx="5" fill="#1D3855"/>
+  <rect x="74" y="136" width="136" height="10" rx="5" fill="#1D3855"/>
+  <circle cx="222" cy="156" r="16" fill="url(#accent)"/>
+
+  <rect x="564" y="88" width="198" height="164" rx="12" fill="#101D31" stroke="#274260"/>
+  <rect x="586" y="110" width="154" height="10" rx="5" fill="#1D3855"/>
+  <rect x="586" y="132" width="118" height="10" rx="5" fill="#1D3855"/>
+  <rect x="586" y="162" width="62" height="62" rx="10" fill="#122740" stroke="#27527B"/>
+  <path d="M603 193L620 176L629 185L653 161" stroke="url(#cyan)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="694" cy="193" r="28" fill="#122740" stroke="#27527B"/>
+  <circle cx="694" cy="193" r="12" fill="url(#accent)"/>
+
+  <rect x="210" y="420" width="400" height="34" rx="17" fill="#172D48"/>
+  <rect x="260" y="392" width="302" height="28" rx="14" fill="#1D3858"/>
+  <rect x="364" y="240" width="98" height="54" rx="12" fill="#11243A" stroke="#2D5A87"/>
+  <circle cx="412" cy="267" r="15" fill="url(#accent)"/>
+
+  <rect x="292" y="282" width="32" height="116" rx="16" fill="#1A3657"/>
+  <rect x="498" y="282" width="32" height="116" rx="16" fill="#1A3657"/>
+
+  <path d="M320 304L378 266" stroke="#5AA3E2" stroke-width="16" stroke-linecap="round"/>
+  <path d="M502 304L446 266" stroke="#5AA3E2" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="380" cy="266" r="18" fill="#1C3D62" stroke="#6EBEFF" stroke-width="3"/>
+  <circle cx="446" cy="266" r="18" fill="#1C3D62" stroke="#6EBEFF" stroke-width="3"/>
+
+  <path d="M408 266L408 192" stroke="#7CC8FF" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="408" cy="178" r="28" fill="#163454" stroke="#6EBEFF" stroke-width="3"/>
+  <rect x="391" y="148" width="34" height="18" rx="6" fill="url(#accent)"/>
+
+  <path d="M436 178L506 152" stroke="#7CC8FF" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="518" cy="148" r="20" fill="#163454" stroke="#6EBEFF" stroke-width="3"/>
+  <rect x="510" y="130" width="16" height="36" rx="8" fill="url(#accent)"/>
+
+  <path d="M380 178L302 150" stroke="#7CC8FF" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="292" cy="146" r="20" fill="#163454" stroke="#6EBEFF" stroke-width="3"/>
+  <rect x="284" y="128" width="16" height="36" rx="8" fill="url(#accent)"/>
+
+  <path d="M262 216C302 238 338 238 380 216" stroke="#274B70" stroke-width="3" stroke-dasharray="6 8"/>
+  <path d="M438 216C478 238 516 238 558 216" stroke="#274B70" stroke-width="3" stroke-dasharray="6 8"/>
+
+  <circle cx="106" cy="472" r="5" fill="#3FAAFF"/>
+  <circle cx="138" cy="472" r="5" fill="#3FAAFF"/>
+  <circle cx="170" cy="472" r="5" fill="#3FAAFF"/>
+  <rect x="560" y="462" width="190" height="20" rx="10" fill="#162A44"/>
+  <rect x="576" y="466" width="74" height="12" rx="6" fill="url(#accent)"/>
+</svg>
