@@ -16,9 +16,6 @@ function initRobotScene() {
     alpha: true,
     antialias: true,
   });
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearColor(0x000000, 0);
 
@@ -26,15 +23,18 @@ function initRobotScene() {
   camera.position.set(0, 1.5, 5);
   camera.lookAt(0, 0.5, 0);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
   scene.add(ambientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0x00f5ff, 1.2);
+  const directionalLight = new THREE.DirectionalLight(0x00f5ff, 2.5);
   directionalLight.position.set(3, 5, 3);
-  directionalLight.castShadow = true;
   scene.add(directionalLight);
 
-  const pointLight = new THREE.PointLight(0xff7a18, 0.8, 14);
+  const fillLight = new THREE.DirectionalLight(0xff7a18, 1.2);
+  fillLight.position.set(-3, 2, 2);
+  scene.add(fillLight);
+
+  const pointLight = new THREE.PointLight(0xff7a18, 1.5, 14);
   pointLight.position.set(-2, 2, 2);
   scene.add(pointLight);
 
@@ -42,14 +42,14 @@ function initRobotScene() {
   scene.add(robot);
 
   const darkMetalMaterial = new THREE.MeshStandardMaterial({
-    color: 0x131b28,
-    metalness: 0.8,
-    roughness: 0.2,
+    color: 0x3a5f8a,
+    metalness: 0.9,
+    roughness: 0.15,
   });
   const cyanPanelMaterial = new THREE.MeshStandardMaterial({
-    color: 0x1e3340,
+    color: 0x2a6080,
     emissive: 0x00f5ff,
-    emissiveIntensity: 0.3,
+    emissiveIntensity: 0.8,
     metalness: 0.8,
     roughness: 0.2,
   });
@@ -70,8 +70,6 @@ function initRobotScene() {
 
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), cyanPanelMaterial);
   head.position.set(0, 1.65, 0);
-  head.castShadow = true;
-  head.receiveShadow = true;
   robot.add(head);
 
   const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.05), eyeMaterial.clone());
@@ -101,8 +99,6 @@ function initRobotScene() {
 
   const torso = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.6), darkMetalMaterial);
   torso.position.set(0, 0.7, 0);
-  torso.castShadow = true;
-  torso.receiveShadow = true;
   robot.add(torso);
 
   const chestPanel = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.05), chestMaterial);
@@ -115,8 +111,6 @@ function initRobotScene() {
 
   const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.0, 16), darkMetalMaterial);
   leftArm.position.set(0, -0.5, 0);
-  leftArm.castShadow = true;
-  leftArm.receiveShadow = true;
   leftArmPivot.add(leftArm);
 
   const leftHand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 0.2), darkMetalMaterial);
@@ -129,8 +123,6 @@ function initRobotScene() {
 
   const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.0, 16), darkMetalMaterial);
   rightArm.position.set(0, -0.5, 0);
-  rightArm.castShadow = true;
-  rightArm.receiveShadow = true;
   rightArmPivot.add(rightArm);
 
   const rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 0.2), darkMetalMaterial);
@@ -139,14 +131,10 @@ function initRobotScene() {
 
   const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), darkMetalMaterial);
   leftLeg.position.set(-0.22, -0.15, 0);
-  leftLeg.castShadow = true;
-  leftLeg.receiveShadow = true;
   robot.add(leftLeg);
 
   const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), darkMetalMaterial);
   rightLeg.position.set(0.22, -0.15, 0);
-  rightLeg.castShadow = true;
-  rightLeg.receiveShadow = true;
   robot.add(rightLeg);
 
   const leftFoot = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.15, 0.45), darkMetalMaterial);
@@ -172,35 +160,30 @@ function initRobotScene() {
   );
   groundGlow.rotation.x = -Math.PI / 2;
   groundGlow.position.y = -0.76;
-  groundGlow.receiveShadow = true;
   scene.add(groundGlow);
-
-  const particleGeometry = new THREE.SphereGeometry(0.015, 8, 8);
-  const particleColors = [0x00f5ff, 0xff7a18];
-  const particles = [];
 
   const randomBetween = (min, max) => Math.random() * (max - min) + min;
 
-  for (let index = 0; index < 120; index += 1) {
-    const color = particleColors[index % 2];
-    const particle = new THREE.Mesh(
-      particleGeometry,
-      new THREE.MeshStandardMaterial({
-        color,
-        emissive: color,
-        emissiveIntensity: 0.8,
-        transparent: true,
-        opacity: 0.6,
-        metalness: 0.2,
-        roughness: 0.4,
-      }),
-    );
+  const PARTICLE_COUNT = 60;
+  const pPositions = new Float32Array(PARTICLE_COUNT * 3);
+  const pSpeeds = new Float32Array(PARTICLE_COUNT);
+  const pOffsets = new Float32Array(PARTICLE_COUNT);
 
-    particle.position.set(randomBetween(-3, 3), randomBetween(-2, 4), randomBetween(-3, 1));
-    particle.userData.speed = randomBetween(0.002, 0.006);
-    particles.push(particle);
-    scene.add(particle);
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    pPositions[i * 3]     = randomBetween(-3, 3);
+    pPositions[i * 3 + 1] = randomBetween(-2, 4);
+    pPositions[i * 3 + 2] = randomBetween(-3, 1);
+    pSpeeds[i]  = randomBetween(0.002, 0.006);
+    pOffsets[i] = Math.random() * Math.PI * 2;
   }
+
+  const particleBufGeo = new THREE.BufferGeometry();
+  particleBufGeo.setAttribute("position", new THREE.BufferAttribute(pPositions, 3));
+  const particleSystem = new THREE.Points(
+    particleBufGeo,
+    new THREE.PointsMaterial({ color: 0x00f5ff, size: 0.07, transparent: true, opacity: 0.75, sizeAttenuation: true }),
+  );
+  scene.add(particleSystem);
 
   function resizeRenderer() {
     const bounds = container.getBoundingClientRect();
@@ -235,17 +218,17 @@ function initRobotScene() {
     leftEye.material.emissiveIntensity = eyePulse;
     rightEye.material.emissiveIntensity = eyePulse;
 
-    for (let index = 0; index < particles.length; index += 1) {
-      const particle = particles[index];
-      particle.position.y += particle.userData.speed;
-      particle.position.x += Math.sin(now * 0.00022 + index) * 0.0007;
-
-      if (particle.position.y > 4) {
-        particle.position.y = -2;
-        particle.position.x = randomBetween(-3, 3);
-        particle.position.z = randomBetween(-3, 1);
+    const posArr = particleBufGeo.attributes.position.array;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      posArr[i * 3 + 1] += pSpeeds[i];
+      posArr[i * 3]     += Math.sin(now * 0.00022 + pOffsets[i]) * 0.0007;
+      if (posArr[i * 3 + 1] > 4) {
+        posArr[i * 3 + 1] = -2;
+        posArr[i * 3]     = randomBetween(-3, 3);
+        posArr[i * 3 + 2] = randomBetween(-3, 1);
       }
     }
+    particleBufGeo.attributes.position.needsUpdate = true;
 
     groundGlow.material.opacity = 0.22 + Math.sin(now * 0.003) * 0.06;
     renderer.render(scene, camera);
@@ -599,6 +582,19 @@ if (cookieAccept) {
     cookieBanner.hidden = true;
     trackEvent("cookie_consent_updated", { status: "accepted" });
   });
+}
+
+if (cookieReject) {
+  cookieReject.addEventListener("click", () => {
+    localStorage.setItem(COOKIE_CONSENT_KEY, "rejected");
+    cookieBanner.hidden = true;
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initCyberpunkEnhancements, { once: true });
+} else {
+  initCyberpunkEnhancements();
 }
 
 if (cookieReject) {
