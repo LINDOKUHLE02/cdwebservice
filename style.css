@@ -722,3 +722,257 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Cyberpunk Visual Upgrade Layer --- */
+:root {
+  --neon-cyan: #00f5ff;
+  --neon-purple: #7b2ff7;
+  --glass-surface: rgba(19, 27, 40, 0.7);
+}
+
+body {
+  background-color: #0a0f18;
+  background-image:
+    radial-gradient(circle at 12% 10%, rgba(255, 122, 24, 0.2), transparent 32%),
+    radial-gradient(circle at 88% 20%, rgba(0, 245, 255, 0.14), transparent 36%),
+    linear-gradient(rgba(0, 245, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(123, 47, 247, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, #0a0f18 0%, #0d1118 45%, #080d16 100%);
+  background-size: auto, auto, 38px 38px, 38px 38px, auto;
+  background-attachment: fixed;
+}
+
+.bg-orb {
+  filter: blur(120px);
+  opacity: 0.42;
+  mix-blend-mode: screen;
+}
+
+.orb-one {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  left: -110px;
+  background: radial-gradient(circle at 32% 32%, rgba(255, 122, 24, 0.92) 0%, rgba(255, 122, 24, 0.36) 42%, rgba(255, 122, 24, 0) 72%);
+}
+
+.orb-two {
+  width: 620px;
+  height: 620px;
+  right: -220px;
+  bottom: -220px;
+  background: radial-gradient(circle at 40% 36%, rgba(0, 245, 255, 0.84) 0%, rgba(123, 47, 247, 0.36) 48%, rgba(123, 47, 247, 0) 74%);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 245, 255, 0.08) 0,
+    rgba(0, 245, 255, 0.08) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  z-index: 1;
+}
+
+.hero-grid,
+.trust-inline {
+  position: relative;
+  z-index: 2;
+}
+
+h1,
+h2 {
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.25), 0 0 18px rgba(123, 47, 247, 0.16);
+}
+
+.hero h1 {
+  animation: glitch 0.6s steps(2, end);
+}
+
+.eyebrow {
+  position: relative;
+  display: inline-block;
+  padding-right: 0.3rem;
+}
+
+.eyebrow::after {
+  content: "|";
+  margin-left: 0.2rem;
+  color: var(--neon-cyan);
+  animation: cursorBlink 0.9s steps(1, end) infinite;
+}
+
+.nav-cta {
+  border-color: rgba(0, 245, 255, 0.55);
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+.hero-visual {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 245, 255, 0.28);
+  background: linear-gradient(165deg, rgba(25, 38, 58, 0.78), rgba(10, 15, 24, 0.92));
+  will-change: transform;
+  transition: transform 180ms ease;
+}
+
+.hero-visual::before {
+  content: "";
+  position: absolute;
+  inset: -30% -25% auto;
+  height: 55%;
+  background: radial-gradient(circle, rgba(0, 245, 255, 0.24) 0%, rgba(0, 245, 255, 0) 70%);
+  pointer-events: none;
+}
+
+#robot-canvas {
+  width: 100%;
+  height: 360px;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 255, 0.25);
+  background: radial-gradient(circle at 50% 18%, rgba(15, 88, 168, 0.24), rgba(10, 15, 24, 0.2) 65%, rgba(10, 15, 24, 0.42) 100%);
+}
+
+.card,
+.package-card {
+  background: var(--glass-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  box-shadow: 0 10px 34px rgba(4, 10, 20, 0.42);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.card:hover,
+.card:focus-within {
+  transform: translateY(-6px);
+  border-color: rgba(0, 245, 255, 0.5);
+  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.2), 0 15px 30px rgba(0, 245, 255, 0.2), 0 12px 24px rgba(255, 122, 24, 0.15);
+}
+
+.package-card:hover,
+.package-card:focus-within {
+  transform: translateY(-5px);
+  border-color: rgba(255, 122, 24, 0.55);
+  box-shadow: 0 0 0 1px rgba(255, 122, 24, 0.2), 0 14px 28px rgba(255, 122, 24, 0.2), 0 10px 22px rgba(0, 245, 255, 0.14);
+}
+
+.package-card.featured {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(19, 27, 40, 0.82), rgba(19, 27, 40, 0.76)) padding-box,
+    linear-gradient(125deg, rgba(255, 122, 24, 0.96), rgba(0, 245, 255, 0.92), rgba(123, 47, 247, 0.95), rgba(255, 122, 24, 0.96)) border-box;
+  background-size: 100% 100%, 220% 220%;
+  animation: featuredBorderFlow 5s linear infinite;
+}
+
+.process-step {
+  position: relative;
+  overflow: hidden;
+  border-left: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.process-step::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: linear-gradient(180deg, rgba(255, 122, 24, 0.9), rgba(255, 122, 24, 0.2));
+  transition: width 320ms ease;
+}
+
+.process-step.in-view {
+  border-left-color: rgba(255, 122, 24, 0.95);
+  box-shadow: inset 3px 0 0 rgba(255, 122, 24, 0.94), 0 0 22px rgba(255, 122, 24, 0.2);
+}
+
+.process-step.in-view::before {
+  width: 3px;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translateX(0);
+    text-shadow: 0 0 12px rgba(0, 245, 255, 0.3), 0 0 20px rgba(123, 47, 247, 0.2);
+  }
+
+  20% {
+    transform: translateX(-2px);
+    text-shadow: -3px 0 rgba(0, 245, 255, 0.6), 3px 0 rgba(255, 122, 24, 0.5);
+  }
+
+  50% {
+    transform: translateX(2px);
+    text-shadow: 3px 0 rgba(0, 245, 255, 0.65), -3px 0 rgba(123, 47, 247, 0.5);
+  }
+
+  80% {
+    transform: translateX(-1px);
+    text-shadow: -2px 0 rgba(255, 122, 24, 0.6), 2px 0 rgba(0, 245, 255, 0.55);
+  }
+
+  100% {
+    transform: translateX(0);
+    text-shadow: 0 0 10px rgba(0, 245, 255, 0.26), 0 0 18px rgba(123, 47, 247, 0.18);
+  }
+}
+
+@keyframes cursorBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes neonPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 122, 24, 0.2), 0 0 12px rgba(255, 122, 24, 0.45);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0 rgba(0, 245, 255, 0.22), 0 0 16px rgba(0, 245, 255, 0.55);
+  }
+}
+
+@keyframes featuredBorderFlow {
+  0% {
+    background-position: 0 0, 0% 50%;
+  }
+
+  50% {
+    background-position: 0 0, 100% 50%;
+  }
+
+  100% {
+    background-position: 0 0, 0% 50%;
+  }
+}
+
+@media (max-width: 700px) {
+  #robot-canvas {
+    height: 300px;
+  }
+}

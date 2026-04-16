@@ -1,3 +1,322 @@
+function initRobotScene() {
+  if (typeof THREE === "undefined") {
+    return;
+  }
+
+  const container = document.querySelector(".hero-visual");
+  const canvas = document.querySelector("#robot-canvas");
+
+  if (!container || !canvas) {
+    return;
+  }
+
+  const scene = new THREE.Scene();
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: true,
+  });
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 1.5, 5);
+  camera.lookAt(0, 0.5, 0);
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0x00f5ff, 1.2);
+  directionalLight.position.set(3, 5, 3);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
+
+  const pointLight = new THREE.PointLight(0xff7a18, 0.8, 14);
+  pointLight.position.set(-2, 2, 2);
+  scene.add(pointLight);
+
+  const robot = new THREE.Group();
+  scene.add(robot);
+
+  const darkMetalMaterial = new THREE.MeshStandardMaterial({
+    color: 0x131b28,
+    metalness: 0.8,
+    roughness: 0.2,
+  });
+  const cyanPanelMaterial = new THREE.MeshStandardMaterial({
+    color: 0x1e3340,
+    emissive: 0x00f5ff,
+    emissiveIntensity: 0.3,
+    metalness: 0.8,
+    roughness: 0.2,
+  });
+  const eyeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2b1608,
+    emissive: 0xff7a18,
+    emissiveIntensity: 1.5,
+    metalness: 0.8,
+    roughness: 0.2,
+  });
+  const chestMaterial = new THREE.MeshStandardMaterial({
+    color: 0x1a2440,
+    emissive: 0x0f58a8,
+    emissiveIntensity: 0.9,
+    metalness: 0.8,
+    roughness: 0.2,
+  });
+
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), cyanPanelMaterial);
+  head.position.set(0, 1.65, 0);
+  head.castShadow = true;
+  head.receiveShadow = true;
+  robot.add(head);
+
+  const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.05), eyeMaterial.clone());
+  leftEye.position.set(-0.16, 0.05, 0.37);
+  head.add(leftEye);
+
+  const rightEye = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.05), eyeMaterial.clone());
+  rightEye.position.set(0.16, 0.05, 0.37);
+  head.add(rightEye);
+
+  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4, 12), darkMetalMaterial);
+  antenna.position.set(0, 0.55, 0);
+  head.add(antenna);
+
+  const antennaTip = new THREE.Mesh(
+    new THREE.SphereGeometry(0.08, 12, 12),
+    new THREE.MeshStandardMaterial({
+      color: 0x00f5ff,
+      emissive: 0x00f5ff,
+      emissiveIntensity: 1,
+      metalness: 0.8,
+      roughness: 0.2,
+    }),
+  );
+  antennaTip.position.set(0, 0.25, 0);
+  antenna.add(antennaTip);
+
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.6), darkMetalMaterial);
+  torso.position.set(0, 0.7, 0);
+  torso.castShadow = true;
+  torso.receiveShadow = true;
+  robot.add(torso);
+
+  const chestPanel = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.05), chestMaterial);
+  chestPanel.position.set(0, 0, 0.33);
+  torso.add(chestPanel);
+
+  const leftArmPivot = new THREE.Group();
+  leftArmPivot.position.set(-0.68, 1.06, 0);
+  robot.add(leftArmPivot);
+
+  const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.0, 16), darkMetalMaterial);
+  leftArm.position.set(0, -0.5, 0);
+  leftArm.castShadow = true;
+  leftArm.receiveShadow = true;
+  leftArmPivot.add(leftArm);
+
+  const leftHand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 0.2), darkMetalMaterial);
+  leftHand.position.set(0, -1.05, 0);
+  leftArmPivot.add(leftHand);
+
+  const rightArmPivot = new THREE.Group();
+  rightArmPivot.position.set(0.68, 1.06, 0);
+  robot.add(rightArmPivot);
+
+  const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 1.0, 16), darkMetalMaterial);
+  rightArm.position.set(0, -0.5, 0);
+  rightArm.castShadow = true;
+  rightArm.receiveShadow = true;
+  rightArmPivot.add(rightArm);
+
+  const rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, 0.2), darkMetalMaterial);
+  rightHand.position.set(0, -1.05, 0);
+  rightArmPivot.add(rightHand);
+
+  const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), darkMetalMaterial);
+  leftLeg.position.set(-0.22, -0.15, 0);
+  leftLeg.castShadow = true;
+  leftLeg.receiveShadow = true;
+  robot.add(leftLeg);
+
+  const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), darkMetalMaterial);
+  rightLeg.position.set(0.22, -0.15, 0);
+  rightLeg.castShadow = true;
+  rightLeg.receiveShadow = true;
+  robot.add(rightLeg);
+
+  const leftFoot = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.15, 0.45), darkMetalMaterial);
+  leftFoot.position.set(-0.22, -0.63, 0.08);
+  robot.add(leftFoot);
+
+  const rightFoot = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.15, 0.45), darkMetalMaterial);
+  rightFoot.position.set(0.22, -0.63, 0.08);
+  robot.add(rightFoot);
+
+  const groundGlow = new THREE.Mesh(
+    new THREE.CircleGeometry(0.8, 36),
+    new THREE.MeshStandardMaterial({
+      color: 0x221106,
+      emissive: 0xff7a18,
+      emissiveIntensity: 0.65,
+      metalness: 0.3,
+      roughness: 0.7,
+      transparent: true,
+      opacity: 0.28,
+      side: THREE.DoubleSide,
+    }),
+  );
+  groundGlow.rotation.x = -Math.PI / 2;
+  groundGlow.position.y = -0.76;
+  groundGlow.receiveShadow = true;
+  scene.add(groundGlow);
+
+  const particleGeometry = new THREE.SphereGeometry(0.015, 8, 8);
+  const particleColors = [0x00f5ff, 0xff7a18];
+  const particles = [];
+
+  const randomBetween = (min, max) => Math.random() * (max - min) + min;
+
+  for (let index = 0; index < 120; index += 1) {
+    const color = particleColors[index % 2];
+    const particle = new THREE.Mesh(
+      particleGeometry,
+      new THREE.MeshStandardMaterial({
+        color,
+        emissive: color,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.6,
+        metalness: 0.2,
+        roughness: 0.4,
+      }),
+    );
+
+    particle.position.set(randomBetween(-3, 3), randomBetween(-2, 4), randomBetween(-3, 1));
+    particle.userData.speed = randomBetween(0.002, 0.006);
+    particles.push(particle);
+    scene.add(particle);
+  }
+
+  function resizeRenderer() {
+    const bounds = container.getBoundingClientRect();
+    const width = Math.max(1, Math.floor(bounds.width - 2));
+    const height = Math.max(240, Math.floor(bounds.height - 64));
+
+    canvas.style.height = `${height}px`;
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+
+  const resizeObserver = new ResizeObserver(resizeRenderer);
+  resizeObserver.observe(container);
+  resizeRenderer();
+
+  let animationId = 0;
+
+  function animate() {
+    const now = Date.now();
+
+    robot.position.y = Math.sin(now * 0.001) * 0.15;
+    robot.rotation.y = Math.sin(now * 0.0005) * 0.3;
+    leftArmPivot.rotation.z = Math.sin(now * 0.002) * 0.25;
+    rightArmPivot.rotation.z = -Math.sin(now * 0.002) * 0.25;
+    head.rotation.z = Math.sin(now * 0.0015) * 0.08;
+
+    const pulseScale = 0.8 + Math.sin(now * 0.005) * 0.2;
+    antennaTip.scale.set(pulseScale, pulseScale, pulseScale);
+
+    const eyePulse = 1.5 + Math.sin(now * 0.004) * 0.5;
+    leftEye.material.emissiveIntensity = eyePulse;
+    rightEye.material.emissiveIntensity = eyePulse;
+
+    for (let index = 0; index < particles.length; index += 1) {
+      const particle = particles[index];
+      particle.position.y += particle.userData.speed;
+      particle.position.x += Math.sin(now * 0.00022 + index) * 0.0007;
+
+      if (particle.position.y > 4) {
+        particle.position.y = -2;
+        particle.position.x = randomBetween(-3, 3);
+        particle.position.z = randomBetween(-3, 1);
+      }
+    }
+
+    groundGlow.material.opacity = 0.22 + Math.sin(now * 0.003) * 0.06;
+    renderer.render(scene, camera);
+    animationId = window.requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  window.addEventListener("beforeunload", () => {
+    window.cancelAnimationFrame(animationId);
+    resizeObserver.disconnect();
+    renderer.dispose();
+  });
+}
+
+function initProcessStepReveal() {
+  const processSteps = document.querySelectorAll(".process-step");
+
+  if (!processSteps.length) {
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+        }
+      });
+    },
+    {
+      threshold: 0.2,
+      rootMargin: "0px 0px -8% 0px",
+    },
+  );
+
+  processSteps.forEach((step) => observer.observe(step));
+}
+
+function initHeroParallax() {
+  const heroVisual = document.querySelector(".hero-visual");
+
+  if (!heroVisual) {
+    return;
+  }
+
+  const maxShiftPx = 12;
+
+  window.addEventListener(
+    "mousemove",
+    (event) => {
+      const xRatio = event.clientX / window.innerWidth - 0.5;
+      const yRatio = event.clientY / window.innerHeight - 0.5;
+      const x = (-xRatio * maxShiftPx).toFixed(2);
+      const y = (-yRatio * maxShiftPx).toFixed(2);
+      heroVisual.style.transform = `translate(${x}px, ${y}px)`;
+    },
+    { passive: true },
+  );
+
+  window.addEventListener("mouseleave", () => {
+    heroVisual.style.transform = "translate(0px, 0px)";
+  });
+}
+
+function initCyberpunkEnhancements() {
+  initRobotScene();
+  initProcessStepReveal();
+  initHeroParallax();
+}
+
 const estimateForm = document.querySelector("#estimate-form");
 const estimateRange = document.querySelector("#estimateRange");
 const estimateNote = document.querySelector("#estimateNote");
@@ -291,4 +610,10 @@ if (cookieReject) {
 
 if (year) {
   year.textContent = new Date().getFullYear();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initCyberpunkEnhancements, { once: true });
+} else {
+  initCyberpunkEnhancements();
 }
