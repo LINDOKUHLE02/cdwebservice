@@ -56,14 +56,14 @@ function initRobotScene() {
   const eyeMaterial = new THREE.MeshStandardMaterial({
     color: 0x2b1608,
     emissive: 0xff7a18,
-    emissiveIntensity: 1.5,
+    emissiveIntensity: 2.0,
     metalness: 0.8,
     roughness: 0.2,
   });
   const chestMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a2440,
     emissive: 0x0f58a8,
-    emissiveIntensity: 0.9,
+    emissiveIntensity: 1.2,
     metalness: 0.8,
     roughness: 0.2,
   });
@@ -166,6 +166,7 @@ function initRobotScene() {
 
   const PARTICLE_COUNT = 60;
   const pPositions = new Float32Array(PARTICLE_COUNT * 3);
+  const pColors = new Float32Array(PARTICLE_COUNT * 3);
   const pSpeeds = new Float32Array(PARTICLE_COUNT);
   const pOffsets = new Float32Array(PARTICLE_COUNT);
 
@@ -175,22 +176,33 @@ function initRobotScene() {
     pPositions[i * 3 + 2] = randomBetween(-3, 1);
     pSpeeds[i]  = randomBetween(0.002, 0.006);
     pOffsets[i] = Math.random() * Math.PI * 2;
+
+    const usePurple = Math.random() > 0.5;
+    pColors[i * 3] = usePurple ? 0.48 : 0.0;
+    pColors[i * 3 + 1] = usePurple ? 0.18 : 0.96;
+    pColors[i * 3 + 2] = 1.0;
   }
 
   const particleBufGeo = new THREE.BufferGeometry();
   particleBufGeo.setAttribute("position", new THREE.BufferAttribute(pPositions, 3));
+  particleBufGeo.setAttribute("color", new THREE.BufferAttribute(pColors, 3));
   const particleSystem = new THREE.Points(
     particleBufGeo,
-    new THREE.PointsMaterial({ color: 0x00f5ff, size: 0.07, transparent: true, opacity: 0.75, sizeAttenuation: true }),
+    new THREE.PointsMaterial({
+      size: 0.07,
+      transparent: true,
+      opacity: 0.75,
+      sizeAttenuation: true,
+      vertexColors: true,
+    }),
   );
   scene.add(particleSystem);
 
   function resizeRenderer() {
     const bounds = container.getBoundingClientRect();
-    const width = Math.max(1, Math.floor(bounds.width - 2));
-    const height = Math.max(240, Math.floor(bounds.height - 64));
+    const width = bounds.width;
+    const height = 420;
 
-    canvas.style.height = `${height}px`;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
@@ -205,6 +217,10 @@ function initRobotScene() {
   function animate() {
     const now = Date.now();
 
+    camera.position.x = Math.sin(now * 0.0005) * 0.3;
+    camera.lookAt(0, 0.5, 0);
+    scene.rotation.y += 0.0005;
+
     robot.position.y = Math.sin(now * 0.001) * 0.15;
     robot.rotation.y = Math.sin(now * 0.0005) * 0.3;
     leftArmPivot.rotation.z = Math.sin(now * 0.002) * 0.25;
@@ -214,9 +230,10 @@ function initRobotScene() {
     const pulseScale = 0.8 + Math.sin(now * 0.005) * 0.2;
     antennaTip.scale.set(pulseScale, pulseScale, pulseScale);
 
-    const eyePulse = 1.5 + Math.sin(now * 0.004) * 0.5;
+    const eyePulse = 2.0 + Math.sin(now * 0.004) * 0.2;
     leftEye.material.emissiveIntensity = eyePulse;
     rightEye.material.emissiveIntensity = eyePulse;
+    chestPanel.material.emissiveIntensity = 1.2 + Math.sin(now * 0.003) * 0.1;
 
     const posArr = particleBufGeo.attributes.position.array;
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -315,12 +332,38 @@ const cookieBanner = document.querySelector("#cookie-banner");
 const cookieAccept = document.querySelector("#cookie-accept");
 const cookieReject = document.querySelector("#cookie-reject");
 const trackedContactLinks = document.querySelectorAll(".js-track-contact");
+const aiGeneratorForm = document.querySelector("#ai-generator-form");
+const aiPromptField = document.querySelector("#aiPrompt");
+const aiGenerateButton = document.querySelector("#aiGenerateButton");
+const aiResult = document.querySelector("#aiResult");
+const aiHeroText = document.querySelector("#aiHeroText");
+const aiSections = document.querySelector("#aiSections");
+const aiStyleSuggestion = document.querySelector("#aiStyleSuggestion");
+const aiFeedback = document.querySelector("#aiFeedback");
+const aiPreviewFrame = document.querySelector("#aiPreviewFrame");
 
 const LAST_SUBMISSION_KEY = "crafted-digital-last-submission";
 const COOKIE_CONSENT_KEY = "crafted-digital-cookie-consent";
 const CONTACT_FORM_MIN_FILL_MS = 4000;
 const CONTACT_FORM_COOLDOWN_MS = 30000;
 const formLoadedAt = Date.now();
+
+function safeGetStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    return null;
+  }
+}
+
+function safeSetStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 const basePriceByType = {
   website: 18000,
@@ -353,7 +396,7 @@ const scopeHintByType = {
 };
 
 function hasAnalyticsConsent() {
-  return localStorage.getItem(COOKIE_CONSENT_KEY) === "accepted";
+  return safeGetStorage(COOKIE_CONSENT_KEY) === "accepted";
 }
 
 function trackEvent(eventName, eventData = {}) {
@@ -429,8 +472,156 @@ function generateRequestId() {
 }
 
 function canSubmitByCooldown() {
-  const lastSubmittedAt = Number(localStorage.getItem(LAST_SUBMISSION_KEY) || "0");
+  const lastSubmittedAt = Number(safeGetStorage(LAST_SUBMISSION_KEY) || "0");
   return Date.now() - lastSubmittedAt > CONTACT_FORM_COOLDOWN_MS;
+}
+
+function normalizeAiSections(rawSections) {
+  if (Array.isArray(rawSections)) {
+    return rawSections
+      .map((section) => {
+        if (typeof section === "string") {
+          return section.trim();
+        }
+
+        if (section && typeof section === "object") {
+          return (section.title || section.name || section.heading || "").toString().trim();
+        }
+
+        return "";
+      })
+      .filter(Boolean);
+  }
+
+  if (typeof rawSections === "string") {
+    return rawSections
+      .split(/\n|,|;/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function setAiLoadingState(isLoading) {
+  if (!aiGenerateButton || !aiResult) {
+    return;
+  }
+
+  aiGenerateButton.disabled = isLoading;
+  aiGenerateButton.textContent = isLoading ? "Generating..." : "Generate Concept";
+  aiGenerateButton.classList.toggle("is-loading", isLoading);
+  aiResult.classList.toggle("is-loading", isLoading);
+}
+
+function renderAiConcept(data) {
+  const heroText = (
+    data.heroText ||
+    data.hero ||
+    data.hero_copy ||
+    data.copy?.hero ||
+    "No hero concept returned yet."
+  )
+    .toString()
+    .trim();
+
+  const sections = normalizeAiSections(data.sections || data.sectionSuggestions || data.structure);
+
+  const styleSuggestion = (
+    data.styleSuggestion ||
+    data.style ||
+    data.visualDirection ||
+    data.theme ||
+    "No style suggestion returned yet."
+  )
+    .toString()
+    .trim();
+
+  const previewHtml = data.preview?.html || data.generatedSite?.html || "";
+  const previewCss = data.preview?.css || data.generatedSite?.css || "";
+  const previewJs = data.preview?.js || data.generatedSite?.js || "";
+
+  aiHeroText.textContent = heroText;
+  aiStyleSuggestion.textContent = styleSuggestion;
+  aiSections.innerHTML = "";
+
+  if (sections.length) {
+    sections.forEach((section) => {
+      const item = document.createElement("li");
+      item.textContent = section;
+      aiSections.appendChild(item);
+    });
+  } else {
+    const item = document.createElement("li");
+    item.textContent = "No section suggestions returned yet.";
+    aiSections.appendChild(item);
+  }
+
+  if (aiPreviewFrame) {
+    const safeHtml = previewHtml || `
+      <main style="padding:2.5rem 1rem;max-width:980px;margin:0 auto;">
+        <h1 style="margin:0 0 0.8rem;">${heroText}</h1>
+        <p style="margin:0 0 1.2rem;opacity:0.88;">${styleSuggestion}</p>
+        <section>
+          <h2 style="margin:0 0 0.6rem;font-size:1.15rem;">Suggested Sections</h2>
+          <ul style="margin:0;padding-left:1.2rem;line-height:1.65;">
+            ${sections.map((section) => `<li>${section}</li>`).join("")}
+          </ul>
+        </section>
+      </main>
+    `;
+
+    const srcDoc = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #e7f1ff;
+      background: radial-gradient(circle at 18% 20%, rgba(0,245,255,0.12), transparent 38%),
+        radial-gradient(circle at 82% 26%, rgba(123,47,247,0.14), transparent 42%),
+        linear-gradient(180deg, #07101b 0%, #0a1220 100%);
+    }
+    ${previewCss}
+  </style>
+</head>
+<body>
+  ${safeHtml}
+  <script>
+    try {
+      ${previewJs}
+    } catch (e) {
+      console.warn('Preview script error:', e);
+    }
+  <\/script>
+</body>
+</html>`;
+
+    aiPreviewFrame.srcdoc = srcDoc;
+  }
+
+  aiResult.hidden = false;
+}
+
+async function requestAiConcept(prompt) {
+  const response = await fetch("http://localhost:3000/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ prompt }),
+  });
+
+  if (!response.ok) {
+    throw new Error("AI request failed");
+  }
+
+  return response.json();
 }
 
 async function forwardToCrmWebhook(crmWebhook, payload) {
@@ -530,7 +721,7 @@ if (contactForm) {
         throw new Error("Request failed");
       }
 
-      localStorage.setItem(LAST_SUBMISSION_KEY, Date.now().toString());
+      safeSetStorage(LAST_SUBMISSION_KEY, Date.now().toString());
 
       const crmPayload = {
         requestId,
@@ -558,7 +749,9 @@ if (contactForm) {
         project_type: formData.get("clientProjectType"),
       });
       contactForm.reset();
-      calculateEstimate();
+      if (estimateForm) {
+        calculateEstimate();
+      }
     } catch (error) {
       feedback.textContent = "Could not send request right now. Please try again shortly.";
       feedback.classList.add("is-error");
@@ -568,39 +761,113 @@ if (contactForm) {
   });
 }
 
-if (cookieBanner) {
-  const consentState = localStorage.getItem(COOKIE_CONSENT_KEY);
+if (aiGeneratorForm) {
+  aiGeneratorForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  if (!consentState) {
-    cookieBanner.hidden = false;
+    const prompt = (aiPromptField?.value || "").trim();
+
+    if (!prompt) {
+      if (aiFeedback) {
+        aiFeedback.textContent = "Please describe your business and website goals first.";
+        aiFeedback.classList.add("is-error");
+      }
+      return;
+    }
+
+    if (aiFeedback) {
+      aiFeedback.textContent = "";
+      aiFeedback.classList.remove("is-error");
+    }
+
+    trackEvent("ai_concept_requested", { prompt_length: prompt.length });
+    setAiLoadingState(true);
+
+    try {
+      const concept = await requestAiConcept(prompt);
+      renderAiConcept(concept || {});
+      trackEvent("ai_concept_generated", {
+        sections_count: aiSections ? aiSections.children.length : 0,
+      });
+    } catch (error) {
+      if (aiFeedback) {
+        aiFeedback.textContent = "Could not generate a concept right now. Please try again shortly.";
+        aiFeedback.classList.add("is-error");
+      }
+    } finally {
+      setAiLoadingState(false);
+    }
+  });
+}
+
+function clearNonEssentialCookies() {
+  const cookieNames = document.cookie
+    .split(";")
+    .map((item) => item.trim().split("=")[0])
+    .filter(Boolean);
+
+  const blockedPrefixes = ["_ga", "_gid", "_gat", "_fbp", "_clck", "_clsk", "_hj"];
+
+  cookieNames.forEach((name) => {
+    const shouldClear = blockedPrefixes.some((prefix) => name.startsWith(prefix));
+
+    if (!shouldClear) {
+      return;
+    }
+
+    document.cookie = `${name}=; Max-Age=0; path=/`;
+    document.cookie = `${name}=; Max-Age=0; path=/; domain=${location.hostname}`;
+  });
+}
+
+function applyCookieConsent(consentState) {
+  if (!cookieBanner) {
+    return;
   }
+
+  const hideBanner = () => {
+    cookieBanner.hidden = true;
+    cookieBanner.style.display = "none";
+  };
+
+  const showBanner = () => {
+    cookieBanner.hidden = false;
+    cookieBanner.style.display = "flex";
+  };
+
+  if (consentState === "accepted") {
+    safeSetStorage(COOKIE_CONSENT_KEY, "accepted");
+    hideBanner();
+    trackEvent("cookie_consent_updated", { status: "accepted" });
+    return;
+  }
+
+  if (consentState === "rejected") {
+    safeSetStorage(COOKIE_CONSENT_KEY, "rejected");
+    hideBanner();
+    clearNonEssentialCookies();
+    return;
+  }
+
+  const savedConsent = safeGetStorage(COOKIE_CONSENT_KEY);
+
+  if (savedConsent === "accepted" || savedConsent === "rejected") {
+    hideBanner();
+    return;
+  }
+
+  showBanner();
 }
 
 if (cookieAccept) {
   cookieAccept.addEventListener("click", () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
-    cookieBanner.hidden = true;
-    trackEvent("cookie_consent_updated", { status: "accepted" });
+    applyCookieConsent("accepted");
   });
 }
 
 if (cookieReject) {
   cookieReject.addEventListener("click", () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "rejected");
-    cookieBanner.hidden = true;
-  });
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initCyberpunkEnhancements, { once: true });
-} else {
-  initCyberpunkEnhancements();
-}
-
-if (cookieReject) {
-  cookieReject.addEventListener("click", () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "rejected");
-    cookieBanner.hidden = true;
+    applyCookieConsent("rejected");
   });
 }
 
@@ -609,7 +876,11 @@ if (year) {
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initCyberpunkEnhancements, { once: true });
+  document.addEventListener("DOMContentLoaded", () => {
+    initCyberpunkEnhancements();
+    applyCookieConsent();
+  }, { once: true });
 } else {
   initCyberpunkEnhancements();
+  applyCookieConsent();
 }
